@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2 id="greeting">Loading...</h2>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <script>
+        async function fetchGreeting() {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/panel', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (res.status === 200) {
+                const data = await res.json();
+                document.getElementById('greeting').innerText = data.message;
+            } else {
+                window.location.href = 'login.html';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
+        fetchGreeting();
+    </script>
+</body>
+</html>

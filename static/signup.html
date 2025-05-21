@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Signup</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/zxcvbn@4.4.2/dist/zxcvbn.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h2>Signup</h2>
+        <input id="username" type="text" placeholder="Username">
+        <input id="password" type="password" placeholder="Password" oninput="checkPasswordStrength()">
+        <div id="password-strength-bar"></div>
+        <div id="password-strength-msg" style="color: #ffcc00;"></div>
+        <button onclick="signup()">Register</button>
+        <p>Already have an account? <a href="login.html">Login</a></p>
+        <p id="message"></p>
+    </div>
+
+    <script>
+        function checkPasswordStrength() {
+        const password = document.getElementById('password').value;
+        const result = zxcvbn(password);
+
+        const strengthMessage = result.score;
+        const feedbackMessage = result.feedback.suggestions.join(' ');
+
+        let color = '';
+        let width = 0;
+        if (strengthMessage === 0) {
+            color = 'red';
+            width = 25;
+        } else if (strengthMessage === 1) {
+            color = 'orange';
+            width = 50;
+        } else if (strengthMessage === 2) {
+            color = 'yellow';
+            width = 75;
+        } else {
+            color = 'green';
+            width = 100;
+        }
+
+        document.getElementById('password-strength-msg').innerText = feedbackMessage;
+        document.getElementById('password-strength-msg').style.color = color;
+
+        // Show progress bar
+        const progressBar = document.getElementById('password-strength-bar');
+        progressBar.innerHTML = `<span style="width: ${width}%; background-color: ${color};"></span>`;
+    }
+
+
+        async function signup() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Check zxcvbn score
+            const result = zxcvbn(password);
+            if (result.score < 2) {
+                document.getElementById('message').innerText = "Password is too weak. Please use a stronger password.";
+                return;
+            }
+
+            const res = await fetch('/signup', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await res.json();
+            document.getElementById('message').innerText = data.message;
+
+            if (res.status === 201) {
+                setTimeout(() => window.location.href = 'login.html', 1000);
+            }
+        }
+    </script>
+</body>
+</html>
